@@ -23,8 +23,11 @@ jobs:
       - name: Cache Rust Dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.cargo/registry
-          key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry
+            ~/.carg/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock', '**/*.rs') }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -49,7 +52,7 @@ jobs:
 
       - name: Package Lambda Function
         run: |
-          cd target/lambda/${{ vars.TARGET_LAMBDA_NAME }}
+          cd target/lambda/${{ github.repository }}
           zip -r lambda.zip .
 
       - name: Set Artifact Name
