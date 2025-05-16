@@ -47,6 +47,11 @@ jobs:
             cargo lambda build
           fi
 
+      - name: Package Lambda Function
+        run: |
+          cd target/lambda/${{ vars.TARGET_LAMBDA_NAME }}
+          zip -r lambda.zip .
+
       - name: Set Artifact Name
         run: |
           if [ "${{ github.event.client_payload.IS_RELEASE || 'false' }}" == "true" ]; then
