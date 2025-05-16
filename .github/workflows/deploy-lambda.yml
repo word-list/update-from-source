@@ -1,0 +1,67 @@
+name: Deploy Lambda
+on:
+  workflow_dispatch: # Manual trigger
+  push:
+    tags:
+      - 'v*' # Runs when a new version tag is pushed (like v1.0.0)
+
+jobs:  
+  trigger-build:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Validate Environment Variables
+        run: |
+          if [ -z "${{ vars.DEPLOYMENT_BUCKET_NAME }}" ] || [ -z "${{ vars.TARGET_LAMBDA_NAME }}" ]; then
+            echo "❌ DEPLOYMENT_BUCKET_NAME and TARGET_LAMBDA_NAME must be set"
+            exit 1
+          fi
+
+      - name: Trigger Build Workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: trigger-build
+
+  wait-for-build:
+    needs: trigger-build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Wait for Build Workflow Completion
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let success = false;
+            while (!success) {
+              const runs = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: "build-lambda.yml",
+                status: "completed"
+              });
+              success = runs.data.workflow_runs.some(run => run.conclusion === "success");
+              if (!success) await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 sec
+            }
+
+  deploy:
+    needs: wait-for-build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-package
+          path: ./lambda.zip
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp lambda.zip s3://${{ vars.DEPLOYMENT_BUCKET_NAME }}/${{ github.repository }}/${{ github.ref_name }}.zip
+
+      - name: Deploy Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ vars.TARGET_LAMBDA_NAME }} \
+            --s3-bucket ${{ vars.DEPLOYMENT_BUCKET_NAME }} \
+            --s3-key ${{ github.repository }}/${{ github.ref_name }}.zip

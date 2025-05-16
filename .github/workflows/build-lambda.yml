@@ -1,0 +1,44 @@
+name: Build Lambda
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows another workflow to trigger this one
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Validate LAMBDA_FUNCTION_NAME
+        run: |
+          if [ -z "${{ vars.LAMBDA_FUNCTION_NAME }}" ]; then
+            echo "❌ LAMBDA_FUNCTION_NAME must be set"
+            exit 1
+          fi
+
+      - name: Cache Rust Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Install Cargo Lambda
+        run: cargo install cargo-lambda
+
+      - name: Build Lambda
+        run: cargo lambda build --release --target aarch64-unknown-linux-gnu
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-package
+          path: target/aarch64-unknown-linux-gnu/release/{{ vars.LAMBDA_FUNCTION_NAME }}

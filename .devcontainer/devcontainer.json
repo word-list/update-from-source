@@ -1,0 +1,8 @@
+{
+	"name": "update-from-source-devcontainer",
+	"image": "mcr.microsoft.com/devcontainers/rust",
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"postCreateCommand": "cargo install cargo-lambda"
+}
