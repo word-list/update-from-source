@@ -41,10 +41,10 @@ jobs:
         run: |
           if [ "${{ github.event.client_payload.IS_RELEASE || 'false' }}" == "true" ]; then
             echo "🚀 Building for release!"
-            cargo build --release --features lto --codegen-units=1
+            cargo lambda build --release --features lto --codegen-units=1
           else
             echo "⚡ Building for normal push"
-            cargo build --release --codegen-units=8
+            cargo lambda build
           fi
 
       - name: Set Artifact Name
