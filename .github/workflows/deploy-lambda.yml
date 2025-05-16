@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      - name: Validate Environment Variables
+      - name: Validate Environment
         run: |
           if [ -z "${{ vars.DEPLOYMENT_BUCKET_NAME }}" ] || [ -z "${{ vars.TARGET_LAMBDA_NAME }}" ]; then
             echo "❌ DEPLOYMENT_BUCKET_NAME and TARGET_LAMBDA_NAME must be set"

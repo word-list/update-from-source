@@ -13,9 +13,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Validate LAMBDA_FUNCTION_NAME
+      - name: Validate Environment
         run: |
-          if [ -z "${{ vars.LAMBDA_FUNCTION_NAME }}" ]; then
+          if [ -z "${{ vars.TARGET_LAMBDA_NAME }}" ]; then
             echo "❌ LAMBDA_FUNCTION_NAME must be set"
             exit 1
           fi
