@@ -16,7 +16,7 @@ jobs:
       - name: Validate Environment
         run: |
           if [ -z "${{ vars.TARGET_LAMBDA_NAME }}" ]; then
-            echo "❌ LAMBDA_FUNCTION_NAME must be set"
+            echo "❌ TARGET_LAMBDA_NAME must be set"
             exit 1
           fi
 
@@ -31,14 +31,32 @@ jobs:
         with:
           targets: aarch64-unknown-linux-gnu
 
+      - name: Install Zig
+        run: npm install -g @ziglang/cli
+
       - name: Install Cargo Lambda
         run: cargo install cargo-lambda
 
       - name: Build Lambda
-        run: cargo lambda build --release --target aarch64-unknown-linux-gnu
+        run: |
+          if [ "${{ github.event.client_payload.IS_RELEASE || 'false' }}" == "true" ]; then
+            echo "🚀 Building for release!"
+            cargo build --release --features lto --codegen-units=1
+          else
+            echo "⚡ Building for normal push"
+            cargo build --release --codegen-units=8
+          fi
+
+      - name: Set Artifact Name
+        run: |
+          if [ "${{ github.event.client_payload.IS_RELEASE || 'false' }}" == "true" ]; then
+            echo "ARTIFACT_NAME=${{ github.repository }}-release" >> $GITHUB_ENV
+          else
+            echo "ARTIFACT_NAME=${{ github.repository }}-build" >> $GITHUB_ENV
+          fi
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lambda-package
-          path: target/aarch64-unknown-linux-gnu/release/{{ vars.LAMBDA_FUNCTION_NAME }}
+          name: ${{ github.repository }}-release
+          path: lambda.zip

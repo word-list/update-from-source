@@ -21,6 +21,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           event-type: trigger-build
+          client-payload: '{"IS_RELEASE": "true"}'
 
   wait-for-build:
     needs: trigger-build
