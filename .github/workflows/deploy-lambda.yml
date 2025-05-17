@@ -7,13 +7,14 @@ on:
 
 jobs:
   trigger-build:
-    name: Trigger Build Workflow
+    name: Optimised Build
     uses: word-list/update-from-source/.github/workflows/build-lambda.yml@main
     with:
       is_release: true
     secrets: inherit
 
   deploy:
+    name: Deploy
     needs: trigger-build
     runs-on: ubuntu-latest
     environment: staging
@@ -22,6 +23,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-release
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
 
       - name: Upload to S3
         run: |
