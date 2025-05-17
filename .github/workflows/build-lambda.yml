@@ -56,7 +56,7 @@ jobs:
         run: |
           if [ "${{ inputs.is_release }}" == "true" ]; then
             echo "🚀 Building for release!"
-            cargo lambda build --release --features lto --codegen-units=1
+            cargo lambda build --release
           else
             echo "⚡ Building for normal push"
             cargo lambda build
