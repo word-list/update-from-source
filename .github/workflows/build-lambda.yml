@@ -64,9 +64,12 @@ jobs:
           else
             echo "ARTIFACT_NAME=${{ github.event.repository.name }}-build" >> $GITHUB_ENV
           fi
+      
+      - run: ls -lh target/lambda/      
+      - run: realpath target/lambda/lambda.zip
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-release
-          path: target/lambda/lambda.zip
+          path: ${{ github.workspace }}/target/lambda/lambda.zip
