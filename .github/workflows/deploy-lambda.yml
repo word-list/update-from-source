@@ -39,5 +39,5 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name ${{ vars.TARGET_LAMBDA_NAME }} \
-            --s3-bucket ${{ vars.DEPLOYMENT_BUCKET_NAME }} \            
+            --s3-bucket ${{ vars.DEPLOYMENT_BUCKET_NAME }} \
             --s3-key ${{ github.event.repository.name }}/${{ github.ref_name }}.zip
