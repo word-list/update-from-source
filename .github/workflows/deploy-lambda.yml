@@ -5,23 +5,13 @@ on:
     tags:
       - 'v*' # Runs when a new version tag is pushed (like v1.0.0)
 
-jobs:  
+jobs:
   trigger-build:
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - name: Validate Environment
-        run: |
-          if [ -z "${{ vars.DEPLOYMENT_BUCKET_NAME }}" ] || [ -z "${{ vars.TARGET_LAMBDA_NAME }}" ]; then
-            echo "❌ DEPLOYMENT_BUCKET_NAME and TARGET_LAMBDA_NAME must be set"
-            exit 1
-          fi
-
-      - name: Trigger Build Workflow
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          event-type: trigger-build
-          client-payload: '{"IS_RELEASE": "true"}'
+    name: Trigger Build Workflow
+    uses: word-list/update-from-source/.github/workflows/build-lambda.yml@main
+    with:
+      is_release: true
+    secrets: inherit
 
   wait-for-build:
     needs: trigger-build

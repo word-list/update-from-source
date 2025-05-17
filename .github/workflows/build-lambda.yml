@@ -3,7 +3,13 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows another workflow to trigger this one
+  workflow_dispatch:
+  workflow_call:
+      inputs:
+        is_release:
+          required: false
+          type: boolean
+          default: false
 
 jobs:
   build:
@@ -42,7 +48,7 @@ jobs:
 
       - name: Build Lambda
         run: |
-          if [ "${{ github.event.client_payload.IS_RELEASE || 'false' }}" == "true" ]; then
+          if [ "${{ inputs.is_release }}" == "true" ]; then
             echo "🚀 Building for release!"
             cargo lambda build --release --features lto --codegen-units=1
           else
@@ -59,7 +65,7 @@ jobs:
 
       - name: Set Artifact Name
         run: |
-          if [ "${{ github.event.client_payload.IS_RELEASE || 'false' }}" == "true" ]; then
+          if [ "${{ inputs.is_release }}" == "true" ]; then
             echo "ARTIFACT_NAME=${{ github.event.repository.name }}-release" >> $GITHUB_ENV
           else
             echo "ARTIFACT_NAME=${{ github.event.repository.name }}-build" >> $GITHUB_ENV
