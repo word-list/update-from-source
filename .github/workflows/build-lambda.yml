@@ -45,7 +45,12 @@ jobs:
         run: npm install -g @ziglang/cli
 
       - name: Install Cargo Lambda
-        run: cargo install cargo-lambda
+        run: |
+          if ! command -v cargo-lambda &> /dev/null; then
+            cargo install cargo-lambda
+          else
+            echo "Cargo Lambda is already installed, skipping installation."
+          fi
 
       - name: Build Lambda
         run: |

@@ -13,30 +13,8 @@ jobs:
       is_release: true
     secrets: inherit
 
-  wait-for-build:
-    needs: trigger-build
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - name: Wait for Build Workflow Completion
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            let success = false;
-            while (!success) {
-              const runs = await github.rest.actions.listWorkflowRuns({
-                owner,
-                repo,
-                workflow_id: "build-lambda.yml",
-                status: "completed"
-              });
-              success = runs.data.workflow_runs.some(run => run.conclusion === "success");
-              if (!success) await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 sec
-            }
-
   deploy:
-    needs: wait-for-build
+    needs: trigger-build
     runs-on: ubuntu-latest
     environment: staging
     steps:
