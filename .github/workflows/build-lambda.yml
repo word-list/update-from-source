@@ -55,6 +55,7 @@ jobs:
           ls -lh target/lambda
           cd target/lambda/${{ github.event.repository.name }}
           zip -r lambda.zip .
+          ls -lh .
 
       - name: Set Artifact Name
         run: |
@@ -68,4 +69,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-release
-          path: target/lambda/lambda.zip
+          path: ./lambda.zip
