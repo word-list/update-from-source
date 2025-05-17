@@ -53,7 +53,7 @@ pub(crate) async fn init_aws() {
 }
 
 async fn fetch_url_from_dynamodb(id: &str) -> Result<String, FetchError> {
-    let table_name = env::var("DYNAMODB_TABLE_NAME").expect("DYNAMODB_TABLE_NAME must be set");
+    let table_name = env::var("SOURCE_TABLE_NAME").expect("SOURCE_TABLE_NAME must be set");
 
     let response = DYNAMO_CLIENT
         .get()
@@ -89,7 +89,7 @@ async fn process_text_file(url: String, force: bool) -> Result<(), Box<dyn std::
 
     let mut lines = reader.lines();
 
-    let queue_url = env::var("SQS_QUEUE_URL")?;
+    let queue_url = env::var("QUERY_WORD_QUEUE").expect("QUERY_WORD_QUEUE must be set");
 
     while let Some(line) = lines.next_line().await? {
         if !line.contains(' ') && !line.contains('\t') {
